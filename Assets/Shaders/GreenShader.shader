@@ -1,3 +1,4 @@
+//test shader to check if the camera's render texture is being passed into shaders
 Shader "Unlit/GreenShader"  
 {
     SubShader

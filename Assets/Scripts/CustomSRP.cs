@@ -8,8 +8,6 @@
         private CustomPostShader postShader;    // The post processing shader our pass was attached to
 
         private RTHandle CameraColorTarget;
-        private RenderTexture rtTemp;
-        private int tempID;
 
         public CustomSRP(CustomPostShader post)
         {
@@ -34,15 +32,16 @@
             // Get the camera data
             var CameraData = renderingData.cameraData;
 
-            if (CameraData.camera.cameraType != CameraType.Game ||  // We want our post processing to only affect the game view and not the scene editor view
-                material == null)                                   // Precautionary check in the event our material is not created
+            if (CameraData.camera.cameraType != CameraType.Game ||  //we want our post processing to only affect the game view and not the scene editor view
+                material == null)                                   //precautionary check in the event our material is not created
             {
                 return;
             }
 
-            CommandBuffer cmdBuffer = CommandBufferPool.Get();  // Fetch any free command buffer to run the graphics code
+            CommandBuffer cmdBuffer = CommandBufferPool.Get();
             if (renderingData.cameraData.renderer.cameraColorTargetHandle != null)
             {
+                ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
                 cmdBuffer.SetGlobalTexture("_CamTexture", Shader.GetGlobalTexture("_CameraOpaqueTexture"));
             }
 
@@ -64,7 +63,6 @@
             context.ExecuteCommandBuffer(cmdBuffer);
 
             // Always make sure to clear and release the buffer to prevent memory leaks!!
-            cmdBuffer.ReleaseTemporaryRT(tempID);
             cmdBuffer.Clear();
             CommandBufferPool.Release(cmdBuffer);
         }
@@ -72,6 +70,8 @@
         private void BlitShader(CommandBuffer cmdBuffer)
         {
             postShader.SendDataToShader(material);
+            
+            ///this code seems to incorrectly blit the texture, as the uv coordinates are 0 when displayed across the screen (seems to only sample bottom left pixel)
 
             //cmdBuffer.Blit(CameraColorTarget, rtTemp, material);
             //cmdBuffer.Blit(rtTemp, CameraColorTarget);
@@ -88,10 +88,6 @@
 
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
-            tempID = Shader.PropertyToID("_temp");
-
-            cmd.GetTemporaryRT(tempID, renderingData.cameraData.cameraTargetDescriptor);
-            rtTemp = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 
             ConfigureTarget(CameraColorTarget);
         }

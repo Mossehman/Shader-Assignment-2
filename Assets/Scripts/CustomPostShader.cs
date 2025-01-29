@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
+/// <summary>
+/// Abstract class such that we can use a generic SRP and Render Feature, and only need to call SendDataToShader()
+/// </summary>
 public abstract class CustomPostShader : ScriptableObject
 {
     [Header("Shader config")]

@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 public class CustomRenderFeature : ScriptableRendererFeature
 {
     public CustomPostShader[] shaders;
-    public List<Material> materials;
+    public List<Material> materials; //this was here for debugging
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
