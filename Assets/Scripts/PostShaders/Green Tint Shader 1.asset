@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f657b674302fe9b4388179f4b36dd18a, type: 3}
   m_Name: Green Tint Shader 1
   m_EditorClassIdentifier: 
-  shader: {fileID: 0}
+  shader: {fileID: 4800000, guid: b89b1297587f0f04b9bdfc421f57244e, type: 3}
   renderInput: 4
   toProfile: 0
-  Intensity: 1
+  Intensity: 6.88

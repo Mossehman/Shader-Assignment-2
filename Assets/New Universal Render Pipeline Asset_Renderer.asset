@@ -71,5 +71,7 @@ MonoBehaviour:
   m_Active: 1
   shaders:
   - {fileID: 11400000, guid: 7c8a099644e14394a8d3b209d0293c4f, type: 2}
+  - {fileID: 11400000, guid: 22173a478a4f8534e9afc8c6423a5bbb, type: 2}
   materials:
+  - {fileID: 0}
   - {fileID: 0}
