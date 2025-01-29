@@ -1,96 +1,101 @@
-    using UnityEngine.Rendering.Universal;
-    using UnityEngine.Rendering;
-    using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
+using UnityEngine;
 
-    public sealed class CustomSRP : ScriptableRenderPass
+public sealed class CustomSRP : ScriptableRenderPass
+{
+    private Material material;              // The pass's material for blitting to the screen
+    private CustomPostShader postShader;    // The post processing shader our pass was attached to
+
+    private RTHandle InputHandle;
+    private RTHandle OutputHandle;
+
+    public CustomSRP(CustomPostShader post)
     {
-        private Material material;              // The pass's material for blitting to the screen
-        private CustomPostShader postShader;    // The post processing shader our pass was attached to
+        if (post == null) { return; }   // This should never happen
+        renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+    
+        this.postShader = post;
+        this.material = new Material(postShader.shader);
 
-        private RTHandle CameraColorTarget;
+        Debug.Log(material.name);
+    }
 
-        public CustomSRP(CustomPostShader post)
+    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+    {
+        // Ensure the material is valid
+        if (material == null)
         {
-            if (post == null) { return; }   // This should never happen
-            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
-        
-            this.postShader = post;
-            this.material = new Material(postShader.shader);
-
-            Debug.Log(material.name);
+            Debug.LogError("Material is null in CustomSRP!");
+            return;
         }
 
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        // Get the camera data
+        var CameraData = renderingData.cameraData;
+
+        if (CameraData.camera.cameraType != CameraType.Game ||  //we want our post processing to only affect the game view and not the scene editor view
+            material == null)                                   //precautionary check in the event our material is not created
         {
-            // Ensure the material is valid
-            if (material == null)
+            return;
+        }
+
+        CommandBuffer cmdBuffer = CommandBufferPool.Get();
+
+        if (postShader.toProfile) // In the event we wish to profile the shader to check performance
+        {
+            using (new ProfilingScope(cmdBuffer, postShader.GetProfiler()))
             {
-                Debug.LogError("Material is null in CustomSRP!");
-                return;
-            }
+                postShader.SendDataToShader(material);
+                Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
 
-            // Get the camera data
-            var CameraData = renderingData.cameraData;
-
-            if (CameraData.camera.cameraType != CameraType.Game ||  //we want our post processing to only affect the game view and not the scene editor view
-                material == null)                                   //precautionary check in the event our material is not created
-            {
-                return;
-            }
-
-            CommandBuffer cmdBuffer = CommandBufferPool.Get();
-            if (renderingData.cameraData.renderer.cameraColorTargetHandle != null)
-            {
-                ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
-                cmdBuffer.SetGlobalTexture("_CamTexture", Shader.GetGlobalTexture("_CameraOpaqueTexture"));
-            }
-
-
-            if (postShader.toProfile) // In the event we wish to profile the shader to check performance
-            {
-                using (new ProfilingScope(cmdBuffer, postShader.GetProfiler()))
+                if (OutputHandle != null)
                 {
-                    BlitShader(cmdBuffer);
-                Blitter.BlitCameraTexture(cmdBuffer, renderingData.cameraData.renderer.cameraColorTargetHandle, CameraColorTarget, material, 0);
+                    ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
+                    cmdBuffer.SetGlobalTexture("_CamTexture", OutputHandle.nameID);
+                }
+
+                Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, 0);
             }
-            }
-            else
-            {
-                BlitShader(cmdBuffer);
-            Blitter.BlitCameraTexture(cmdBuffer, renderingData.cameraData.renderer.cameraColorTargetHandle, CameraColorTarget, material, 0);
         }
-
-            context.ExecuteCommandBuffer(cmdBuffer);
-
-            // Always make sure to clear and release the buffer to prevent memory leaks!!
-            cmdBuffer.Clear();
-            CommandBufferPool.Release(cmdBuffer);
-        }
-
-        private void BlitShader(CommandBuffer cmdBuffer)
+        else
         {
             postShader.SendDataToShader(material);
-            
-            ///this code seems to incorrectly blit the texture, as the uv coordinates are 0 when displayed across the screen (seems to only sample bottom left pixel)
+            Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
 
-            //cmdBuffer.Blit(CameraColorTarget, rtTemp, material);
-            //cmdBuffer.Blit(rtTemp, CameraColorTarget);
-            
+            if (OutputHandle != null)
+            {
+                ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
+                cmdBuffer.SetGlobalTexture("_CamTexture", OutputHandle.nameID);
+            }
 
+            Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, 0);
         }
 
-        public void SetTarget(RTHandle handle)
-        {
-            ConfigureInput(ScriptableRenderPassInput.Color); // Ensure we read from the camera color texture    
-            CameraColorTarget = handle;
-            ConfigureTarget(CameraColorTarget);
-        }
+        context.ExecuteCommandBuffer(cmdBuffer);
 
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-        {
-
-            ConfigureTarget(CameraColorTarget);
-        }
-
-        public Material GetMaterial() { return material; }
+        // Always make sure to clear and release the buffer to prevent memory leaks!!
+        cmdBuffer.Clear();
+        CommandBufferPool.Release(cmdBuffer);
     }
+
+    public void SetTarget(RTHandle handle)
+    {
+        ConfigureInput(ScriptableRenderPassInput.Color); // Ensure we read from the camera color texture    
+        //CameraColorTarget = handle;
+        //ConfigureTarget(CameraColorTarget);
+
+        InputHandle = handle;
+    }
+
+    public Material GetMaterial() { return material; }
+
+    public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+    {
+        var desc = cameraTextureDescriptor;
+        desc.depthBufferBits = 0;
+        desc.msaaSamples = 1;
+
+        RenderingUtils.ReAllocateIfNeeded(ref OutputHandle, desc, FilterMode.Bilinear, TextureWrapMode.Clamp);
+        ConfigureTarget(OutputHandle);
+    }
+}

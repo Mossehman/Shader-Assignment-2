@@ -5,7 +5,6 @@ using UnityEngine.Rendering.Universal;
 public class CustomRenderFeature : ScriptableRendererFeature
 {
     public CustomPostShader[] shaders;
-    public List<Material> materials; //this was here for debugging
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
@@ -18,12 +17,10 @@ public class CustomRenderFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        materials.Clear();
         foreach (var s in shaders)
         {
             s.Init();
             s.CreatePass();
-            materials.Add(s.GetPass().GetMaterial());
         }
     }
 

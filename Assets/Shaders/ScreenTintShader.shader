@@ -21,13 +21,13 @@ Shader "Unlit/ScreenTintShader"
 
 
             float4 _Color;
-            TEXTURE2D_X(_cameraTex);
-            SAMPLER(sampler_cameraTex);
+            TEXTURE2D_X(_CamTexture);
+            SAMPLER(sampler_CamTexture);
 
             half4 frag (Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                float4 color = SAMPLE_TEXTURE2D_X(_cameraTex, sampler_cameraTex, input.texcoord);
+                float4 color = SAMPLE_TEXTURE2D_X(_CamTexture, sampler_CamTexture, input.texcoord);
                 return color * _Color;
             }
             ENDHLSL

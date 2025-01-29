@@ -26,7 +26,7 @@ Shader "Unlit/GreenShader"
             {
                 // Sample the texture using the screen-space UVs
                 float4 color = SAMPLE_TEXTURE2D_X(_CamTexture, sampler_CamTexture, input.texcoord);
-                    return color; //* float4(_Intensity, 0, _Intensity, 1);
+                return color * float4(_Intensity, 0, 0, 1);
                 //return half4(input.texcoord.x, input.texcoord.y, 0.0, 1.0);
             }
             ENDHLSL
