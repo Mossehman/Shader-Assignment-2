@@ -9,10 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f657b674302fe9b4388179f4b36dd18a, type: 3}
-  m_Name: Green Tint Shader
+  m_Script: {fileID: 11500000, guid: 7776674c5225e0343912b508736eb4cb, type: 3}
+  m_Name: Outline Shader
   m_EditorClassIdentifier: 
-  shader: {fileID: 4800000, guid: b89b1297587f0f04b9bdfc421f57244e, type: 3}
+  shader: {fileID: 4800000, guid: 5462533f08f7fa747baffc4f8da06a39, type: 3}
   renderInput: 4
-  toProfile: 1
-  Intensity: 3.7
+  toProfile: 0
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineScale: 1
+  depthThreshold: 2.23
+  normalThreshold: 0.4

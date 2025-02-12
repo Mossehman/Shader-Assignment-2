@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Screen Color Shader
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 7ae8f1e030ebdde4ca7992fcbb282253, type: 3}
-  material: {fileID: 0}
   renderInput: 4
   toProfile: 0
-  color: {r: 0.30535775, g: 0.7782579, b: 0.8867924, a: 1}
+  color: {r: 1, g: 0.2842761, b: 0.216981, a: 1}

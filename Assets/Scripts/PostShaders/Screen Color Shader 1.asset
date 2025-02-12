@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82f5a7067b33cea429789d219ef6993e, type: 3}
   m_Name: Screen Color Shader 1
   m_EditorClassIdentifier: 
-  shader: {fileID: 0}
+  shader: {fileID: 4800000, guid: 7ae8f1e030ebdde4ca7992fcbb282253, type: 3}
   renderInput: 4
   toProfile: 0
-  color: {r: 1, g: 1, b: 1, a: 1}
+  color: {r: 0.058490515, g: 1, b: 0.1348292, a: 1}
+  tex: {fileID: 2800000, guid: 47094e1868cfaa6429627b4360087598, type: 3}

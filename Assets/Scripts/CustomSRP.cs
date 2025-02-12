@@ -46,29 +46,39 @@ public sealed class CustomSRP : ScriptableRenderPass
             using (new ProfilingScope(cmdBuffer, postShader.GetProfiler()))
             {
                 postShader.SendDataToShader(material);
-                Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
+                //Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
+                cmdBuffer.Blit(InputHandle, OutputHandle);
 
+                for (int i = 0; i < material.passCount; i++)
+                {
+                    if (OutputHandle != null)
+                    {
+                        ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
+                        cmdBuffer.SetGlobalTexture("_CamTexture", OutputHandle.nameID);
+                    }
+
+                    //Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, i);
+                    cmdBuffer.Blit(OutputHandle, InputHandle, material, i);
+                }
+            }
+        }
+        else
+        {
+            postShader.SendDataToShader(material);
+            //Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
+            cmdBuffer.Blit(InputHandle, OutputHandle);
+
+            for (int i = 0; i < material.passCount; i++)
+            {
                 if (OutputHandle != null)
                 {
                     ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
                     cmdBuffer.SetGlobalTexture("_CamTexture", OutputHandle.nameID);
                 }
 
-                Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, 0);
+                //Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, i);
+                cmdBuffer.Blit(OutputHandle, InputHandle, material, i);
             }
-        }
-        else
-        {
-            postShader.SendDataToShader(material);
-            Blitter.BlitCameraTexture(cmdBuffer, InputHandle, OutputHandle, 0, true);
-
-            if (OutputHandle != null)
-            {
-                ///verifies that the code is indeed setting the texture, however when trying to set the cameraColorTargetHandle, the image is pure black
-                cmdBuffer.SetGlobalTexture("_CamTexture", OutputHandle.nameID);
-            }
-
-            Blitter.BlitCameraTexture(cmdBuffer, OutputHandle, InputHandle, material, 0);
         }
 
         context.ExecuteCommandBuffer(cmdBuffer);
