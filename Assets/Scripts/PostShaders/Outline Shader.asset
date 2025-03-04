@@ -16,6 +16,8 @@ MonoBehaviour:
   renderInput: 4
   toProfile: 0
   outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineScale: 1
+  outlineScale: 3.31
   depthThreshold: 2.23
+  depthNormalThreshold: 0.6
+  depthNormalThresholdScale: 7
   normalThreshold: 0.4
